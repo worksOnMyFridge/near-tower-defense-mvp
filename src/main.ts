@@ -3,7 +3,6 @@ import BootScene from './game/scenes/BootScene';
 import MenuScene from './game/scenes/MenuScene';
 import GameScene from './game/scenes/GameScene';
 import ResultScene from './game/scenes/ResultScene';
-import UIScene from './game/scenes/UIScene';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -19,7 +18,7 @@ const config: Phaser.Types.Core.GameConfig = {
     default: 'arcade',
     arcade: { debug: false },
   },
-  scene: [BootScene, MenuScene, GameScene, ResultScene, UIScene],
+  scene: [BootScene, MenuScene, GameScene, ResultScene],
 };
 
 const game = new Phaser.Game(config);

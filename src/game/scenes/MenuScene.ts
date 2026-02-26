@@ -1,8 +1,15 @@
 import Phaser from 'phaser';
+import {
+  initNearWallet,
+  getNearAccountId,
+  isNearSignedIn,
+  requestNearSignIn,
+  nearSignOut,
+} from '../../web3/NearWallet';
 
 /**
- * Главное меню. Кнопка "Играть" → GameScene.
- * DOM-кнопка "Играть" — чтобы клик работал во встроенном браузере.
+ * Главное меню. Кнопка "Играть" → GameScene, кнопка "Подключить NEAR" → кошелёк.
+ * DOM-кнопки — чтобы клики работали во встроенном браузере.
  */
 const FOREST_LEVELS = 8;
 
@@ -112,7 +119,7 @@ export default class MenuScene extends Phaser.Scene {
       root.style.top = rect.top + 'px';
       root.style.width = rect.width + 'px';
       root.style.height = rect.height + 'px';
-      // Кнопка «Играть» ниже ряда уровней (центр по X, по Y — под цифрами)
+      // Кнопка «Играть» ниже ряда уровней
       const btn = document.getElementById('menu-overlay-play');
       if (btn) {
         const w = 120;
@@ -121,6 +128,15 @@ export default class MenuScene extends Phaser.Scene {
         btn.style.top = (rect.height / 2 + 65 - h / 2) + 'px';
         btn.style.width = w + 'px';
         btn.style.height = h + 'px';
+      }
+      // Кнопка NEAR — правый верхний угол (right/top чтобы всегда видна)
+      const nearBtn = document.getElementById('menu-overlay-near');
+      if (nearBtn) {
+        nearBtn.style.left = '';
+        nearBtn.style.right = '12px';
+        nearBtn.style.top = '12px';
+        nearBtn.style.width = '168px';
+        nearBtn.style.height = '36px';
       }
     };
 
@@ -151,9 +167,66 @@ export default class MenuScene extends Phaser.Scene {
     };
     inner.appendChild(playBtn);
 
+    const nearBtn = document.createElement('button');
+    nearBtn.id = 'menu-overlay-near';
+    nearBtn.textContent = 'Подключить NEAR';
+    nearBtn.style.cssText =
+      'position:absolute;right:12px;top:12px;pointer-events:auto;cursor:pointer;border:2px solid #6a5a8a;background:#2a2a3a;color:#a090d0;font-size:14px;border-radius:8px;z-index:11;';
+    nearBtn.onmouseover = () => {
+      nearBtn.style.color = '#c0b0e0';
+      nearBtn.style.borderColor = '#8a7aaa';
+    };
+    nearBtn.onmouseout = () => {
+      nearBtn.style.color = '#a090d0';
+      nearBtn.style.borderColor = '#6a5a8a';
+    };
+    nearBtn.onclick = () => this.handleNearButtonClick(nearBtn);
+    inner.appendChild(nearBtn);
+
     parent.appendChild(root);
     this.menuOverlayRoot = root;
     this.time.delayedCall(50, syncPosition);
     syncPosition();
+    this.updateNearButtonState(nearBtn);
+  }
+
+  private async updateNearButtonState(nearBtn: HTMLButtonElement): Promise<void> {
+    try {
+      await initNearWallet();
+      const signedIn = await isNearSignedIn();
+      if (signedIn) {
+        const accountId = await getNearAccountId();
+        nearBtn.textContent = accountId ? `✓ ${this.shortAccountId(accountId)}` : '✓ NEAR';
+        nearBtn.title = accountId ?? 'Подключён';
+      } else {
+        nearBtn.textContent = 'Подключить NEAR';
+        nearBtn.title = '';
+      }
+    } catch {
+      nearBtn.textContent = 'Подключить NEAR';
+    }
+  }
+
+  private shortAccountId(accountId: string): string {
+    if (accountId.length <= 20) return accountId;
+    return accountId.slice(0, 8) + '…' + accountId.slice(-8);
+  }
+
+  private async handleNearButtonClick(nearBtn: HTMLButtonElement): Promise<void> {
+    const signedIn = await isNearSignedIn();
+    if (signedIn) {
+      await nearSignOut();
+      nearBtn.textContent = 'Подключить NEAR';
+      nearBtn.title = '';
+    } else {
+      nearBtn.disabled = true;
+      nearBtn.textContent = 'Открываю…';
+      const ok = await requestNearSignIn();
+      if (!ok) {
+        nearBtn.disabled = false;
+        nearBtn.textContent = 'Подключить NEAR';
+      }
+      // При успехе произойдёт редирект в кошелёк, кнопку обновим после возврата
+    }
   }
 }
