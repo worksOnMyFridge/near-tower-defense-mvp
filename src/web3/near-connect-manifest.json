@@ -183,33 +183,6 @@
       }
     },
     {
-      "id": "unity-wallet",
-      "name": "Unity Wallet",
-      "icon": "https://storage.herewallet.app/upload/e596491a4fcd2d352ffff15bfe4a3fc6c0d0ed29ac9d43edc7501d20d9b667bc.png",
-      "description": "Discover the most secure, feature-packed, self-custodial crypto and Web3 wallet.",
-      "website": "https://unitywallet.com",
-      "version": "1.0.0",
-      "executor": "https://raw.githubusercontent.com/hot-dao/near-selector/refs/heads/main/repository/wallet-connect.js",
-      "type": "sandbox",
-      "platform": {
-        "web": "https://unitywallet.com",
-        "android": "https://unitywallet.oneclick.me",
-        "ios": "https://unitywallet.oneclick.me"
-      },
-      "features": {
-        "signMessage": true,
-        "signInWithoutAddKey": true,
-        "signAndSendTransaction": true,
-        "signAndSendTransactions": true,
-        "testnet": true
-      },
-      "permissions": {
-        "storage": true,
-        "clipboardWrite": true,
-        "walletConnect": true
-      }
-    },
-    {
       "id": "near-cli",
       "name": "NEAR CLI",
       "icon": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%231a1a2e'/%3E%3Cpolyline points='18 40 28 30 18 20' fill='none' stroke='%2300d4aa' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cline x1='32' y1='42' x2='46' y2='42' stroke='%2300d4aa' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E",
