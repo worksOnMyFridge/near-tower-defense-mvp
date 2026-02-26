@@ -14,7 +14,7 @@
 - [x] Создать `.env.example` (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY)
 - [x] Настроить структуру папок по TZ.md раздел 2 (scenes, entities, systems, db, web3, maps, supabase/migrations)
 - [x] ESLint + Prettier для TypeScript → Готово: 2025-02-23
-- [ ] Первый деплой на Vercel (пустая страница — проверка CI/CD)
+- [x] Первый деплой на Vercel (проверка CI/CD)
 - [x] Миграции Supabase (users, tower_progress) + RLS → Готово: 2025-02-23
 
 ### Документация
