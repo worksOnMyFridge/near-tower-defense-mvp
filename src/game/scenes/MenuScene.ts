@@ -227,11 +227,12 @@ export default class MenuScene extends Phaser.Scene {
       nearBtn.disabled = true;
       nearBtn.textContent = 'Открываю…';
       const ok = await requestNearSignIn();
-      if (!ok) {
-        nearBtn.disabled = false;
+      nearBtn.disabled = false;
+      if (ok) {
+        await this.updateNearButtonState(nearBtn);
+      } else {
         nearBtn.textContent = 'Подключить NEAR';
       }
-      // При успехе произойдёт редирект в кошелёк, кнопку обновим после возврата
     }
   }
 }

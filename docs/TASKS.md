@@ -92,7 +92,7 @@
 ## 💎 ФАЗА 2 — NFT + Все синергии (Месяцы 4–6)
 
 ### NEAR / NFT
-- [x] `NearWallet.ts` — подключение NEAR кошелька (read-only, @near-wallet-selector + MyNearWallet)
+- [x] `NearWallet.ts` — подключение NEAR кошелька (read-only, @hot-labs/near-connect: HOT Wallet, MyNearWallet и др.)
 - [ ] `NFTParser.ts` — чтение NFT → Tower params через gameData.ts → NFT_RARITY
 - [ ] Интеграция 2–3 коллекций из личного портфолио
 - [ ] NFT-башня визуально отличается от базовой

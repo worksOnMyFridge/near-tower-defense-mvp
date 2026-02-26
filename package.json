@@ -13,9 +13,7 @@
     "check": "npm run typecheck && npm run lint"
   },
   "dependencies": {
-    "@near-wallet-selector/core": "^10.0.0",
-    "@near-wallet-selector/modal-ui": "^10.0.0",
-    "@near-wallet-selector/my-near-wallet": "^10.0.0",
+    "@hot-labs/near-connect": "^0.10.0",
     "@supabase/supabase-js": "^2.45.0",
     "near-api-js": "^6.0.0",
     "phaser": "^3.60.0"

@@ -1,39 +1,61 @@
 /**
  * Подключение NEAR кошелька (read-only в Фазах 1–2).
- * Использует @near-wallet-selector + modal-ui: модалка выбора кошелька, затем signIn.
+ * Использует @hot-labs/near-connect: модалка с HOT Wallet, MyNearWallet и др.
  */
 
-import type { WalletSelector } from '@near-wallet-selector/core';
-import type { WalletSelectorModal } from '@near-wallet-selector/modal-ui';
+import type { NearConnector, WalletManifest } from '@hot-labs/near-connect';
 
 const NETWORK = (import.meta.env.VITE_NEAR_NETWORK as string) || 'testnet';
 /** contractId для ключа доступа при signIn (можно placeholder для read-only). */
 const APP_CONTRACT_ID = import.meta.env.VITE_NEAR_APP_CONTRACT_ID || 'nftower.game';
 
-let selectorInstance: WalletSelector | null = null;
-let modalInstance: WalletSelectorModal | null = null;
+const MANIFEST_URL =
+  'https://raw.githubusercontent.com/hot-dao/near-selector/refs/heads/main/repository/manifest.json';
+
+/** Id кошельков, которые должны показываться на testnet (в манифесте у них нет features.testnet). */
+const WALLET_IDS_TO_SHOW_ON_TESTNET = ['hot-wallet', 'mynearwallet'];
+
+let connectorInstance: NearConnector | null = null;
 
 /**
- * Инициализация Wallet Selector и модалки. Вызывать один раз при загрузке (например, из меню).
+ * Загружает манифест и добавляет testnet: true для HOT Wallet и MyNearWallet,
+ * чтобы они отображались в списке при network === 'testnet'.
  */
-export async function initNearWallet(): Promise<WalletSelector | null> {
-  if (selectorInstance) return selectorInstance;
+async function loadManifestWithHotWalletOnTestnet(): Promise<{
+  wallets: Array<Record<string, unknown>>;
+  version: string;
+}> {
+  const res = await fetch(MANIFEST_URL);
+  if (!res.ok) throw new Error('Failed to load wallet manifest');
+  const data = (await res.json()) as { wallets: Array<Record<string, unknown>>; version: string };
+  const network = NETWORK as string;
+  if (network !== 'testnet') return data;
+  data.wallets = data.wallets.map((w) => {
+    if (!WALLET_IDS_TO_SHOW_ON_TESTNET.includes((w.id as string) ?? '')) return w;
+    const features = (w.features as Record<string, unknown>) ?? {};
+    return { ...w, features: { ...features, testnet: true } };
+  });
+  return data;
+}
+
+/**
+ * Инициализация NEAR Connect (HOT Wallet, MyNearWallet и др.). Вызывать один раз при загрузке.
+ */
+export async function initNearWallet(): Promise<NearConnector | null> {
+  if (connectorInstance) return connectorInstance;
   if (typeof window === 'undefined') return null;
 
   try {
-    const { setupWalletSelector } = await import('@near-wallet-selector/core');
-    const { setupModal } = await import('@near-wallet-selector/modal-ui');
-    const { setupMyNearWallet } = await import('@near-wallet-selector/my-near-wallet');
-
-    selectorInstance = await setupWalletSelector({
+    const { NearConnector } = await import('@hot-labs/near-connect');
+    const manifestRaw = await loadManifestWithHotWalletOnTestnet();
+    const manifest = manifestRaw as unknown as { wallets: WalletManifest[]; version: string };
+    connectorInstance = new NearConnector({
       network: NETWORK as 'mainnet' | 'testnet',
-      modules: [setupMyNearWallet()],
+      manifest,
+      signIn: { contractId: APP_CONTRACT_ID, methodNames: [] },
+      footerBranding: null,
     });
-    modalInstance = setupModal(selectorInstance, {
-      contractId: APP_CONTRACT_ID,
-      theme: 'dark',
-    });
-    return selectorInstance;
+    return connectorInstance;
   } catch (e) {
     console.warn('NearWallet: init failed', e);
     return null;
@@ -44,35 +66,36 @@ export async function initNearWallet(): Promise<WalletSelector | null> {
  * Получить текущий accountId подключённого кошелька (или null).
  */
 export async function getNearAccountId(): Promise<string | null> {
-  const selector = selectorInstance ?? (await initNearWallet());
-  if (!selector) return null;
-  const state = selector.store.getState();
-  const accounts = state.accounts;
-  const accountId = accounts.length > 0 ? accounts[0].accountId : null;
-  return accountId;
+  const connector = connectorInstance ?? (await initNearWallet());
+  if (!connector) return null;
+  try {
+    const wallet = await connector.wallet();
+    const accounts = await wallet.getAccounts();
+    return accounts.length > 0 ? accounts[0].accountId : null;
+  } catch {
+    return null;
+  }
 }
 
 /**
  * Проверить, подключён ли кошелёк.
  */
 export async function isNearSignedIn(): Promise<boolean> {
-  const selector = selectorInstance ?? (await initNearWallet());
-  if (!selector) return false;
-  return selector.isSignedIn();
+  const accountId = await getNearAccountId();
+  return accountId != null;
 }
 
 /**
- * Показать модалку выбора кошелька (MyNearWallet и др.). После выбора — редирект на вход в кошелёк.
+ * Показать модалку выбора кошелька (HOT Wallet, MyNearWallet и др.). После выбора — вход в кошелёк.
  */
 export async function requestNearSignIn(): Promise<boolean> {
-  const selector = selectorInstance ?? (await initNearWallet());
-  if (!selector) return false;
-  if (!modalInstance) return false;
+  const connector = connectorInstance ?? (await initNearWallet());
+  if (!connector) return false;
   try {
-    modalInstance.show();
+    await connector.connect();
     return true;
   } catch (e) {
-    console.warn('NearWallet: modal show failed', e);
+    console.warn('NearWallet: connect failed', e);
     return false;
   }
 }
@@ -81,10 +104,10 @@ export async function requestNearSignIn(): Promise<boolean> {
  * Отключить кошелёк (sign out).
  */
 export async function nearSignOut(): Promise<void> {
-  const selector = selectorInstance ?? (await initNearWallet());
-  if (!selector) return;
+  const connector = connectorInstance ?? (await initNearWallet());
+  if (!connector) return;
   try {
-    const wallet = await selector.wallet();
+    const wallet = await connector.wallet();
     await wallet.signOut();
   } catch (e) {
     console.warn('NearWallet: signOut failed', e);
