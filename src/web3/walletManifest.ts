@@ -6,8 +6,9 @@ import type { WalletManifest } from '@hot-labs/near-connect';
 
 const asManifest = (w: Record<string, unknown>) => w as unknown as WalletManifest;
 
-export const WALLET_MANIFESTS: WalletManifest[] = [
-  asManifest({
+/** Порядок: MyNearWallet первым, затем HOT Wallet (проверка — библиотека может скрывать 1-й элемент). */
+function buildWalletList(): WalletManifest[] {
+  const hot = asManifest({
     id: 'hot-wallet',
     name: 'HOT Wallet',
     icon: 'https://app.hot-labs.org/images/hot/hot-icon.png',
@@ -36,7 +37,8 @@ export const WALLET_MANIFESTS: WalletManifest[] = [
         'https://wallet.near.org',
       ],
     },
-  }),
+  });
+  const rest = [
   asManifest({
     id: 'mynearwallet',
     name: 'MyNearWallet',
@@ -102,4 +104,8 @@ export const WALLET_MANIFESTS: WalletManifest[] = [
     features: { signMessage: true, signInWithoutAddKey: true, signAndSendTransaction: true, signAndSendTransactions: true, mainnet: true, testnet: true },
     permissions: { storage: true, clipboardWrite: true },
   }),
-];
+  ];
+  return [rest[0], hot, ...rest.slice(1)];
+}
+
+export const WALLET_MANIFESTS: WalletManifest[] = buildWalletList();
