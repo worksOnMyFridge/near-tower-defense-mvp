@@ -9,8 +9,10 @@ const NETWORK = (import.meta.env.VITE_NEAR_NETWORK as string) || 'testnet';
 /** contractId для ключа доступа при signIn (можно placeholder для read-only). */
 const APP_CONTRACT_ID = import.meta.env.VITE_NEAR_APP_CONTRACT_ID || 'nftower.game';
 
-const MANIFEST_URL =
-  'https://raw.githubusercontent.com/hot-dao/near-selector/refs/heads/main/repository/manifest.json';
+const MANIFEST_URLS = [
+  'https://raw.githubusercontent.com/hot-dao/near-selector/refs/heads/main/repository/manifest.json',
+  'https://cdn.jsdelivr.net/gh/hot-dao/near-selector@main/repository/manifest.json',
+];
 
 /** Id кошельков, которые должны показываться на testnet (в манифесте у них нет features.testnet). */
 const WALLET_IDS_TO_SHOW_ON_TESTNET = ['hot-wallet', 'mynearwallet'];
@@ -18,24 +20,32 @@ const WALLET_IDS_TO_SHOW_ON_TESTNET = ['hot-wallet', 'mynearwallet'];
 let connectorInstance: NearConnector | null = null;
 
 /**
- * Загружает манифест и добавляет testnet: true для HOT Wallet и MyNearWallet,
- * чтобы они отображались в списке при network === 'testnet'.
+ * Загружает манифест (пробуем несколько URL для надёжности на Vercel/CDN) и добавляет
+ * testnet: true для HOT Wallet и MyNearWallet, чтобы они отображались при network === 'testnet'.
  */
 async function loadManifestWithHotWalletOnTestnet(): Promise<{
   wallets: Array<Record<string, unknown>>;
   version: string;
 }> {
-  const res = await fetch(MANIFEST_URL);
-  if (!res.ok) throw new Error('Failed to load wallet manifest');
-  const data = (await res.json()) as { wallets: Array<Record<string, unknown>>; version: string };
-  const network = NETWORK as string;
-  if (network !== 'testnet') return data;
-  data.wallets = data.wallets.map((w) => {
-    if (!WALLET_IDS_TO_SHOW_ON_TESTNET.includes((w.id as string) ?? '')) return w;
-    const features = (w.features as Record<string, unknown>) ?? {};
-    return { ...w, features: { ...features, testnet: true } };
-  });
-  return data;
+  let lastError: Error | null = null;
+  for (const url of MANIFEST_URLS) {
+    try {
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) continue;
+      const data = (await res.json()) as { wallets: Array<Record<string, unknown>>; version: string };
+      const network = NETWORK as string;
+      if (network !== 'testnet') return data;
+      data.wallets = data.wallets.map((w) => {
+        if (!WALLET_IDS_TO_SHOW_ON_TESTNET.includes((w.id as string) ?? '')) return w;
+        const features = (w.features as Record<string, unknown>) ?? {};
+        return { ...w, features: { ...features, testnet: true } };
+      });
+      return data;
+    } catch (e) {
+      lastError = e instanceof Error ? e : new Error(String(e));
+    }
+  }
+  throw lastError ?? new Error('Failed to load wallet manifest');
 }
 
 /**
@@ -47,14 +57,20 @@ export async function initNearWallet(): Promise<NearConnector | null> {
 
   try {
     const { NearConnector } = await import('@hot-labs/near-connect');
-    const manifestRaw = await loadManifestWithHotWalletOnTestnet();
-    const manifest = manifestRaw as unknown as { wallets: WalletManifest[]; version: string };
-    connectorInstance = new NearConnector({
-      network: NETWORK as 'mainnet' | 'testnet',
-      manifest,
+    const network = NETWORK as 'mainnet' | 'testnet';
+    const baseOptions = {
+      network,
       signIn: { contractId: APP_CONTRACT_ID, methodNames: [] },
       footerBranding: null,
-    });
+    };
+    try {
+      const manifestRaw = await loadManifestWithHotWalletOnTestnet();
+      const manifest = manifestRaw as unknown as { wallets: WalletManifest[]; version: string };
+      connectorInstance = new NearConnector({ ...baseOptions, manifest });
+    } catch (manifestErr) {
+      console.warn('NearWallet: custom manifest load failed, using library default', manifestErr);
+      connectorInstance = new NearConnector(baseOptions);
+    }
     return connectorInstance;
   } catch (e) {
     console.warn('NearWallet: init failed', e);
