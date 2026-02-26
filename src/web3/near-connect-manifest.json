@@ -46,7 +46,9 @@
       "version": "1.0.0",
       "executor": "https://raw.githubusercontent.com/hot-dao/near-selector/refs/heads/main/repository/mnw.js",
       "type": "sandbox",
-      "platform": { "web": "https://app.mynearwallet.com" },
+      "platform": {
+        "web": "https://app.mynearwallet.com"
+      },
       "features": {
         "signMessage": true,
         "signInWithoutAddKey": true,
@@ -54,7 +56,12 @@
         "signAndSendTransactions": true,
         "testnet": true
       },
-      "permissions": { "storage": true, "allowsOpen": ["https://app.mynearwallet.com"] }
+      "permissions": {
+        "storage": true,
+        "allowsOpen": [
+          "https://app.mynearwallet.com"
+        ]
+      }
     },
     {
       "id": "meteor-wallet",
@@ -81,8 +88,15 @@
       },
       "permissions": {
         "storage": true,
-        "allowsOpen": ["https://chromewebstore.google.com", "https://wallet.meteorwallet.app", "https://meteorwallet.app"],
-        "external": ["meteorCom", "meteorComV2"]
+        "allowsOpen": [
+          "https://chromewebstore.google.com",
+          "https://wallet.meteorwallet.app",
+          "https://meteorwallet.app"
+        ],
+        "external": [
+          "meteorCom",
+          "meteorComV2"
+        ]
       }
     },
     {
@@ -103,39 +117,17 @@
         "verifyOwner": false,
         "testnet": true
       },
-      "platform": { "web": "https://wallet.intear.tech" },
+      "platform": {
+        "web": "https://wallet.intear.tech"
+      },
       "permissions": {
         "storage": true,
         "location": true,
-        "allowsOpen": ["https://wallet.intear.tech", "https://staging.wallet.intear.tech", "intear://"]
-      }
-    },
-    {
-      "id": "okx-wallet",
-      "name": "OKX Wallet",
-      "icon": "https://storage.herewallet.app/upload/cd4ada38f27715b92602fb5f723c2580d7935e5b815b81169cd21b9ead683bfb.svg",
-      "description": "OKX Wallet is a secure and easy-to-use wallet for the OKX ecosystem",
-      "website": "https://okx.com",
-      "version": "1.0.0",
-      "executor": "https://raw.githubusercontent.com/hot-dao/near-selector/refs/heads/main/repository/okx.js",
-      "type": "sandbox",
-      "platform": {
-        "web": "https://www.okx.com",
-        "chrome": "https://chromewebstore.google.com/detail/okx-wallet/mcohilncbfahbmgdjkbpemcciiolgcge",
-        "edge": "https://microsoftedge.microsoft.com/addons/detail/okx-wallet/pbpjkcldjiffchgbbndmhojiacbgflha",
-        "ios": "https://apps.apple.com/us/app/okx-wallet/id6463797825"
-      },
-      "features": {
-        "signMessage": true,
-        "signInWithoutAddKey": true,
-        "signAndSendTransaction": true,
-        "signAndSendTransactions": true,
-        "testnet": true
-      },
-      "permissions": {
-        "storage": true,
-        "external": ["okxwallet.near"],
-        "allowsOpen": ["https://www.okx.com", "https://chromewebstore.google.com/detail/okx-wallet"]
+        "allowsOpen": [
+          "https://wallet.intear.tech",
+          "https://staging.wallet.intear.tech",
+          "intear://"
+        ]
       }
     },
     {
@@ -158,29 +150,13 @@
         "android": "https://play.google.com/store/apps/details?id=com.peersyst.nearmobilewallet",
         "ios": "https://apps.apple.com/us/app/near-mobile-crypto-wallet/id6443501225"
       },
-      "permissions": { "storage": true, "allowsOpen": ["https://nearmobile.app", "https://play.google.com", "https://apps.apple.com"] }
-    },
-    {
-      "id": "nightly-wallet",
-      "name": "Nightly Wallet",
-      "icon": "https://storage.herewallet.app/upload/6947eb5c14c65a715fb49a08e5937dcecc994bf224b3869b9878bd7a7db068f9.webp",
-      "description": "Surf through the multichain Metaverse with Nightly",
-      "website": "https://nightly.app",
-      "version": "1.0.0",
-      "executor": "https://raw.githubusercontent.com/hot-dao/near-selector/refs/heads/main/repository/nightly.js",
-      "type": "sandbox",
-      "platform": { "chrome": "https://chromewebstore.google.com/detail/nightly/fiikommddbeccaoicoejoniammnalkfa" },
-      "features": {
-        "signMessage": true,
-        "signInWithoutAddKey": true,
-        "signAndSendTransaction": true,
-        "signAndSendTransactions": true,
-        "testnet": true
-      },
       "permissions": {
         "storage": true,
-        "external": ["nightly.near"],
-        "allowsOpen": ["https://nightly.app", "https://chromewebstore.google.com/detail/nightly/fiikommddbeccaoicoejoniammnalkfa"]
+        "allowsOpen": [
+          "https://nearmobile.app",
+          "https://play.google.com",
+          "https://apps.apple.com"
+        ]
       }
     },
     {
@@ -200,7 +176,11 @@
         "signAndSendTransactions": true,
         "testnet": true
       },
-      "permissions": { "storage": true, "clipboardWrite": true, "walletConnect": true }
+      "permissions": {
+        "storage": true,
+        "clipboardWrite": true,
+        "walletConnect": true
+      }
     },
     {
       "id": "unity-wallet",
@@ -211,7 +191,11 @@
       "version": "1.0.0",
       "executor": "https://raw.githubusercontent.com/hot-dao/near-selector/refs/heads/main/repository/wallet-connect.js",
       "type": "sandbox",
-      "platform": { "web": "https://unitywallet.com", "android": "https://unitywallet.oneclick.me", "ios": "https://unitywallet.oneclick.me" },
+      "platform": {
+        "web": "https://unitywallet.com",
+        "android": "https://unitywallet.oneclick.me",
+        "ios": "https://unitywallet.oneclick.me"
+      },
       "features": {
         "signMessage": true,
         "signInWithoutAddKey": true,
@@ -219,7 +203,11 @@
         "signAndSendTransactions": true,
         "testnet": true
       },
-      "permissions": { "storage": true, "clipboardWrite": true, "walletConnect": true }
+      "permissions": {
+        "storage": true,
+        "clipboardWrite": true,
+        "walletConnect": true
+      }
     },
     {
       "id": "near-cli",
@@ -240,7 +228,10 @@
         "mainnet": true,
         "testnet": true
       },
-      "permissions": { "storage": true, "clipboardWrite": true }
+      "permissions": {
+        "storage": true,
+        "clipboardWrite": true
+      }
     }
   ]
 }
