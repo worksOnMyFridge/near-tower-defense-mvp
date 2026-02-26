@@ -1,3 +1,4 @@
+import '@near-wallet-selector/modal-ui/styles.css';
 import Phaser from 'phaser';
 import BootScene from './game/scenes/BootScene';
 import MenuScene from './game/scenes/MenuScene';

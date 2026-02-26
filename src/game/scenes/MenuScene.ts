@@ -107,7 +107,7 @@ export default class MenuScene extends Phaser.Scene {
     root.style.cssText =
       'position:fixed;pointer-events:none;z-index:10;left:0;top:0;width:100%;height:100%;display:flex;justify-content:center;align-items:center;';
     const inner = document.createElement('div');
-    inner.style.cssText = 'position:relative;pointer-events:none;';
+    inner.style.cssText = 'position:relative;pointer-events:none;width:100%;height:100%;';
     root.appendChild(inner);
 
     const syncPosition = (): void => {
@@ -169,9 +169,11 @@ export default class MenuScene extends Phaser.Scene {
 
     const nearBtn = document.createElement('button');
     nearBtn.id = 'menu-overlay-near';
+    nearBtn.type = 'button';
+    nearBtn.disabled = false;
     nearBtn.textContent = 'Подключить NEAR';
     nearBtn.style.cssText =
-      'position:absolute;right:12px;top:12px;pointer-events:auto;cursor:pointer;border:2px solid #6a5a8a;background:#2a2a3a;color:#a090d0;font-size:14px;border-radius:8px;z-index:11;';
+      'position:absolute;right:12px;top:12px;pointer-events:auto;cursor:pointer;border:2px solid #6a5a8a;background:#2a2a3a;color:#a090d0;font-size:14px;border-radius:8px;z-index:11;min-width:168px;min-height:36px;';
     nearBtn.onmouseover = () => {
       nearBtn.style.color = '#c0b0e0';
       nearBtn.style.borderColor = '#8a7aaa';
@@ -194,6 +196,7 @@ export default class MenuScene extends Phaser.Scene {
     try {
       await initNearWallet();
       const signedIn = await isNearSignedIn();
+      nearBtn.disabled = false;
       if (signedIn) {
         const accountId = await getNearAccountId();
         nearBtn.textContent = accountId ? `✓ ${this.shortAccountId(accountId)}` : '✓ NEAR';
@@ -203,7 +206,9 @@ export default class MenuScene extends Phaser.Scene {
         nearBtn.title = '';
       }
     } catch {
+      nearBtn.disabled = false;
       nearBtn.textContent = 'Подключить NEAR';
+      nearBtn.title = '';
     }
   }
 

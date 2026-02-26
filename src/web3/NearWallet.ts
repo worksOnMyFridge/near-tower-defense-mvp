@@ -1,18 +1,20 @@
 /**
  * Подключение NEAR кошелька (read-only в Фазах 1–2).
- * Использует @near-wallet-selector: выбор кошелька, получение accountId без отправки транзакций.
+ * Использует @near-wallet-selector + modal-ui: модалка выбора кошелька, затем signIn.
  */
 
 import type { WalletSelector } from '@near-wallet-selector/core';
+import type { WalletSelectorModal } from '@near-wallet-selector/modal-ui';
 
 const NETWORK = (import.meta.env.VITE_NEAR_NETWORK as string) || 'testnet';
 /** contractId для ключа доступа при signIn (можно placeholder для read-only). */
 const APP_CONTRACT_ID = import.meta.env.VITE_NEAR_APP_CONTRACT_ID || 'nftower.game';
 
 let selectorInstance: WalletSelector | null = null;
+let modalInstance: WalletSelectorModal | null = null;
 
 /**
- * Инициализация Wallet Selector. Вызывать один раз при загрузке приложения (например, из меню).
+ * Инициализация Wallet Selector и модалки. Вызывать один раз при загрузке (например, из меню).
  */
 export async function initNearWallet(): Promise<WalletSelector | null> {
   if (selectorInstance) return selectorInstance;
@@ -20,11 +22,16 @@ export async function initNearWallet(): Promise<WalletSelector | null> {
 
   try {
     const { setupWalletSelector } = await import('@near-wallet-selector/core');
+    const { setupModal } = await import('@near-wallet-selector/modal-ui');
     const { setupMyNearWallet } = await import('@near-wallet-selector/my-near-wallet');
 
     selectorInstance = await setupWalletSelector({
       network: NETWORK as 'mainnet' | 'testnet',
       modules: [setupMyNearWallet()],
+    });
+    modalInstance = setupModal(selectorInstance, {
+      contractId: APP_CONTRACT_ID,
+      theme: 'dark',
     });
     return selectorInstance;
   } catch (e) {
@@ -55,25 +62,17 @@ export async function isNearSignedIn(): Promise<boolean> {
 }
 
 /**
- * Запросить подключение кошелька (редирект на MyNearWallet или открытие окна).
+ * Показать модалку выбора кошелька (MyNearWallet и др.). После выбора — редирект на вход в кошелёк.
  */
 export async function requestNearSignIn(): Promise<boolean> {
   const selector = selectorInstance ?? (await initNearWallet());
   if (!selector) return false;
+  if (!modalInstance) return false;
   try {
-    const wallet = await selector.wallet();
-    const origin = typeof window !== 'undefined' ? window.location.origin : '';
-    // Параметры для браузерного кошелька (MyNearWallet). Типы @near-wallet-selector — пересечение всех вариантов (в т.ч. hardware), приводим.
-    const signInParams = {
-      contractId: APP_CONTRACT_ID,
-      successUrl: origin || undefined,
-      failureUrl: origin || undefined,
-    };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await wallet.signIn(signInParams as any);
+    modalInstance.show();
     return true;
   } catch (e) {
-    console.warn('NearWallet: signIn failed', e);
+    console.warn('NearWallet: modal show failed', e);
     return false;
   }
 }
