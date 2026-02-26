@@ -1,43 +1,44 @@
 /**
- * Список кошельков для near-connect (в коде, чтобы гарантированно попадал в сборку).
- * HOT Wallet всегда первый.
+ * Манифесты кошельков для near-connect.
+ * HOT_WALLET_MANIFEST добавляется через registerWallet() к списку по умолчанию.
  */
 import type { WalletManifest } from '@hot-labs/near-connect';
 
 const asManifest = (w: Record<string, unknown>) => w as unknown as WalletManifest;
 
-/** Порядок: MyNearWallet первым, затем HOT Wallet (проверка — библиотека может скрывать 1-й элемент). */
+/** Манифест HOT Wallet — добавляем в коннектор после загрузки списка по умолчанию. */
+export const HOT_WALLET_MANIFEST = asManifest({
+  id: 'hot-wallet',
+  name: 'HOT Wallet',
+  icon: 'https://app.hot-labs.org/images/hot/hot-icon.png',
+  description: 'Secure Multichain wallet. Manage assets, refuel gas, and mine $HOT on any device with HOT Wallet',
+  website: 'https://hot-labs.org/wallet',
+  version: '1.0.0',
+  executor: 'https://raw.githubusercontent.com/hot-dao/near-selector/refs/heads/main/repository/hotwallet.js',
+  type: 'sandbox',
+  platform: {
+    android: 'https://play.google.com/store/apps/details?id=app.herewallet.hot&hl=en',
+    ios: 'https://apps.apple.com/us/app/hot-wallet/id6740916148',
+    chrome: 'https://chromewebstore.google.com/detail/hot-wallet/mpeengabcnhhjjgleiodimegnkpcenbk',
+    firefox: 'https://addons.mozilla.org/en-US/firefox/addon/hot-wallet',
+    tga: 'https://t.me/hot_wallet/app',
+  },
+  features: { signMessage: true, signInWithoutAddKey: true, signAndSendTransaction: true, signAndSendTransactions: true, testnet: true },
+  permissions: {
+    storage: true,
+    allowsOpen: [
+      'https://download.hot-labs.org',
+      'https://hot-labs.org/wallet',
+      'https://t.me/hot_wallet/app',
+      'https://play.google.com',
+      'https://apps.apple.com',
+      'hotwallet://',
+      'https://wallet.near.org',
+    ],
+  },
+});
+
 function buildWalletList(): WalletManifest[] {
-  const hot = asManifest({
-    id: 'hot-wallet',
-    name: 'HOT Wallet',
-    icon: 'https://app.hot-labs.org/images/hot/hot-icon.png',
-    description: 'Secure Multichain wallet. Manage assets, refuel gas, and mine $HOT on any device with HOT Wallet',
-    website: 'https://hot-labs.org/wallet',
-    version: '1.0.0',
-    executor: 'https://raw.githubusercontent.com/hot-dao/near-selector/refs/heads/main/repository/hotwallet.js',
-    type: 'sandbox',
-    platform: {
-      android: 'https://play.google.com/store/apps/details?id=app.herewallet.hot&hl=en',
-      ios: 'https://apps.apple.com/us/app/hot-wallet/id6740916148',
-      chrome: 'https://chromewebstore.google.com/detail/hot-wallet/mpeengabcnhhjjgleiodimegnkpcenbk',
-      firefox: 'https://addons.mozilla.org/en-US/firefox/addon/hot-wallet',
-      tga: 'https://t.me/hot_wallet/app',
-    },
-    features: { signMessage: true, signInWithoutAddKey: true, signAndSendTransaction: true, signAndSendTransactions: true, testnet: true },
-    permissions: {
-      storage: true,
-      allowsOpen: [
-        'https://download.hot-labs.org',
-        'https://hot-labs.org/wallet',
-        'https://t.me/hot_wallet/app',
-        'https://play.google.com',
-        'https://apps.apple.com',
-        'hotwallet://',
-        'https://wallet.near.org',
-      ],
-    },
-  });
   const rest = [
   asManifest({
     id: 'mynearwallet',
@@ -105,7 +106,7 @@ function buildWalletList(): WalletManifest[] {
     permissions: { storage: true, clipboardWrite: true },
   }),
   ];
-  return [rest[0], hot, ...rest.slice(1)];
+  return [HOT_WALLET_MANIFEST, ...rest];
 }
 
 export const WALLET_MANIFESTS: WalletManifest[] = buildWalletList();

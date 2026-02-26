@@ -1,11 +1,10 @@
 /**
  * Подключение NEAR кошелька (read-only в Фазах 1–2).
- * Использует @hot-labs/near-connect: модалка с HOT Wallet, MyNearWallet и др.
- * Список кошельков задан в walletManifest.ts (в коде), чтобы гарантированно попадал в сборку на Vercel.
+ * Использует @hot-labs/near-connect: список по умолчанию + HOT Wallet через registerWallet().
  */
 
 import type { NearConnector } from '@hot-labs/near-connect';
-import { WALLET_MANIFESTS } from './walletManifest';
+import { HOT_WALLET_MANIFEST } from './walletManifest';
 
 const NETWORK = (import.meta.env.VITE_NEAR_NETWORK as string) || 'testnet';
 /** contractId для ключа доступа при signIn (можно placeholder для read-only). */
@@ -14,7 +13,7 @@ const APP_CONTRACT_ID = import.meta.env.VITE_NEAR_APP_CONTRACT_ID || 'nftower.ga
 let connectorInstance: NearConnector | null = null;
 
 /**
- * Инициализация NEAR Connect. Список из walletManifest.ts — HOT Wallet всегда первый.
+ * Инициализация NEAR Connect. Библиотека грузит свой список, затем добавляем HOT Wallet через registerWallet().
  */
 export async function initNearWallet(): Promise<NearConnector | null> {
   if (connectorInstance) return connectorInstance;
@@ -22,13 +21,13 @@ export async function initNearWallet(): Promise<NearConnector | null> {
 
   try {
     const { NearConnector } = await import('@hot-labs/near-connect');
-    const manifest = { version: '1.1.0', wallets: WALLET_MANIFESTS };
     connectorInstance = new NearConnector({
       network: NETWORK as 'mainnet' | 'testnet',
-      manifest,
       signIn: { contractId: APP_CONTRACT_ID, methodNames: [] },
       footerBranding: null,
     });
+    await connectorInstance.whenManifestLoaded;
+    await connectorInstance.registerWallet(HOT_WALLET_MANIFEST);
     return connectorInstance;
   } catch (e) {
     console.warn('NearWallet: init failed', e);
