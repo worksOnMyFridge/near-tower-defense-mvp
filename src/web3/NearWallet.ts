@@ -27,6 +27,11 @@ export async function initNearWallet(): Promise<NearConnector | null> {
       footerBranding: null,
     });
     await connectorInstance.whenManifestLoaded;
+    // Библиотека добавила hot-wallet из своего манифеста БЕЗ testnet:true,
+    // поэтому удаляем его и регистрируем снова — уже с testnet:true.
+    connectorInstance.wallets = connectorInstance.wallets.filter(
+      (w: { manifest?: { id?: string } }) => w.manifest?.id !== 'hot-wallet',
+    );
     await connectorInstance.registerWallet(HOT_WALLET_MANIFEST);
     return connectorInstance;
   } catch (e) {
